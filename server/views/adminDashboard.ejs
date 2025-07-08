@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --light-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --border-color: #e2e8f0;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --info-color: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--light-bg);
+      color: var(--text-dark);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-title h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-title p {
+      color: var(--text-light);
+      margin-top: 8px;
+    }
+
+    .admin-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card.users {
+      border-color: var(--info-color);
+    }
+
+    .stat-card.resumes {
+      border-color: var(--success-color);
+    }
+
+    .stat-card.jobs {
+      border-color: var(--warning-color);
+    }
+
+    .stat-card.questions {
+      border-color: var(--danger-color);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .stat-card.users .stat-icon {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--info-color);
+    }
+
+    .stat-card.resumes .stat-icon {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+    }
+
+    .stat-card.jobs .stat-icon {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+
+    .stat-card.questions .stat-icon {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 16px;
+      color: var(--text-light);
+    }
+
+    .dashboard-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 25px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .content-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .content-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    #deleteSelectedBtn {
+      display: none;
+      background: var(--danger-color);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #deleteSelectedBtn:hover {
+      background: #dc2626;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background-color: #f1f5f9;
+    }
+
+    th {
+      text-align: left;
+      padding: 16px 24px;
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-color);
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+      background-color: #f8fafc;
+    }
+
+    td {
+      padding: 16px 24px;
+      color: var(--text-dark);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-email {
+      font-weight: 500;
+    }
+
+    .count-cell {
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .view-btn {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--info-color);
+    }
+
+    .view-btn:hover {
+      background: var(--info-color);
+      color: white;
+    }
+
+    .delete-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+    }
+
+    .delete-btn:hover {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      padding: 25px;
+      gap: 10px;
+    }
+
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-dark);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .page-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .page-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .checkbox-cell {
+      width: 40px;
+      text-align: center;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .export-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .export-modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-header h3 {
+      font-size: 22px;
+      font-weight: 600;
+    }
+    
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+    
+    .export-options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .export-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .export-option:hover {
+      background: #f8fafc;
+      border-color: var(--primary-color);
+    }
+    
+    .export-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--primary-color);
+    }
+    
+    .export-info h4 {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    
+    .export-info p {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+    
+    .export-actions {
+      margin-top: 25px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    .export-actions button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .export-cancel {
+      background: #f1f5f9;
+      color: var(--text-dark);
+    }
+    
+    .export-confirm {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    @media (max-width: 1024px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      thead {
+        display: none;
+      }
+      
+      tbody tr {
+        display: block;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+      }
+      
+      td {
+        display: block;
+        text-align: right;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border-color);
+      }
+      
+      td:last-child {
+        border-bottom: none;
+      }
+      
+      td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 600;
+        color: var(--text-light);
+      }
+      
+      .checkbox-cell {
+        text-align: center;
+        border-bottom: none !important;
+        padding: 15px 20px;
+      }
+      
+      .user-info {
+        justify-content: flex-end;
+      }
+      
+      .actions {
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-title">
+        <h1>
+          <i class="fas fa-chart-line"></i>
+          Admin Dashboard
+        </h1>
+        <p>Manage users and platform content</p>
+      </div>
+      <div class="admin-actions">
+        <button class="btn btn-primary" id="exportBtn">
+          <i class="fas fa-download"></i> Export Report
+        </button>
+        <!-- <button class="btn btn-danger">
+          <i class="fas fa-cog"></i> Settings
+        </button> -->
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card users">
+        <div class="stat-header">
+          <div>
+            <div class="stat-value"><%= totalUsers %></div>
+            <div class="stat-label">Total Users</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card resumes">
+        <div class="stat-header">
+          <div>
+            <div class="stat-value"><%= totalResumes %></div>
+            <div class="stat-label">Total Resumes</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card jobs">
+        <div class="stat-header">
+          <div>
+            <div class="stat-value"><%= totalJobs %></div>
+            <div class="stat-label">Total Job Posts</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-briefcase"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card questions">
+        <div class="stat-header">
+          <div>
+            <div class="stat-value"><%= totalQuestions %></div>
+            <div class="stat-label">Total Questions</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-question-circle"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-content">
+      <div class="content-header">
+        <h2>User Management</h2>
+        <div class="content-actions">
+          <button id="deleteSelectedBtn" onclick="deleteSelectedUsers()">
+            <i class="fas fa-trash"></i> Delete Selected
+          </button>
+        </div>
+      </div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th class="checkbox-cell">
+              <input type="checkbox" onclick="selectAllToggle(this)">
+            </th>
+            <th>User</th>
+            <th>Created At</th>
+            <th>Resumes</th>
+            <th>Job Posts</th>
+            <th>Questions</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(user => { %>
+          <tr>
+            <td class="checkbox-cell" data-label="Select">
+              <input type="checkbox" class="user-checkbox" value="<%= user._id %>" onchange="toggleDeleteButton()">
+            </td>
+            <td data-label="User">
+              <div class="user-info">
+                <img src="<%= user.photoURL || 'https://ui-avatars.com/api/?name=' + user.email + '&background=4361ee&color=fff' %>" 
+                     alt="User" class="user-avatar">
+                <div>
+                  <div class="user-email"><%= user.email %></div>
+                </div>
+              </div>
+            </td>
+            <td data-label="Created At">
+              <%= user.createdAt.toDateString() %>
+            </td>
+            <td class="count-cell" data-label="Resumes">
+              <%= user.resumeCount %>
+            </td>
+            <td class="count-cell" data-label="Job Posts">
+              <%= user.jobCount %>
+            </td>
+            <td class="count-cell" data-label="Questions">
+              <%= user.questionCount %>
+            </td>
+            <td data-label="Actions">
+              <div class="actions">
+                <a href="/admin/view-user/<%= user._id %>" class="action-btn view-btn" title="View User">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <button onclick="confirmDelete('<%= user._id %>')" class="action-btn delete-btn" title="Delete User">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <% if (currentPage > 1) { %>
+          <a href="?page=<%= currentPage - 1 %>" class="page-btn">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+        <% } %>
+        
+        <% for(let i = 1; i <= totalPages; i++) { %>
+          <a href="?page=<%= i %>" class="page-btn <%= i === currentPage ? 'active' : '' %>">
+            <%= i %>
+          </a>
+        <% } %>
+        
+        <% if (currentPage < totalPages) { %>
+          <a href="?page=<%= currentPage + 1 %>" class="page-btn">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div class="export-modal" id="exportModal">
+    <div class="export-modal-content">
+      <div class="modal-header">
+        <h3>Export Report</h3>
+        <button class="close-modal" id="closeModal">&times;</button>
+      </div>
+      
+      <div class="export-options">
+        <div class="export-option" onclick="selectExportOption('dashboard', this)">
+          <div class="export-icon">
+            <i class="fas fa-chart-pie"></i>
+          </div>
+          <div class="export-info">
+            <h4>Dashboard Summary</h4>
+            <p>Export dashboard statistics and user summary</p>
+          </div>
+        </div>
+        
+        <div class="export-option" onclick="selectExportOption('user', this)">
+          <div class="export-icon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="export-info">
+            <h4>User Details</h4>
+            <p>Export detailed information about all users</p>
+          </div>
+        </div>
+        
+        <div class="export-option" onclick="selectExportOption('current', this)">
+          <div class="export-icon">
+            <i class="fas fa-table"></i>
+          </div>
+          <div class="export-info">
+            <h4>Current View</h4>
+            <p>Export the currently displayed user list</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="export-actions">
+        <button class="export-cancel" id="cancelExport">Cancel</button>
+        <button class="export-confirm" id="confirmExport">Export</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal functionality
+    const exportModal = document.getElementById('exportModal');
+    const exportBtn = document.getElementById('exportBtn');
+    const closeModal = document.getElementById('closeModal');
+    const cancelExport = document.getElementById('cancelExport');
+    const confirmExport = document.getElementById('confirmExport');
+    
+    let selectedExportType = null;
+    
+    exportBtn.addEventListener('click', () => {
+      exportModal.style.display = 'flex';
+    });
+    
+    closeModal.addEventListener('click', () => {
+      exportModal.style.display = 'none';
+    });
+    
+    cancelExport.addEventListener('click', () => {
+      exportModal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      if (e.target === exportModal) {
+        exportModal.style.display = 'none';
+      }
+    });
+    
+    function selectExportOption(type, element) {
+      // Remove selected class from all options
+      document.querySelectorAll('.export-option').forEach(opt => {
+        opt.style.borderColor = 'var(--border-color)';
+        opt.style.backgroundColor = '';
+      });
+      
+      // Add selected style to clicked option
+      element.style.borderColor = 'var(--primary-color)';
+      element.style.backgroundColor = 'rgba(67, 97, 238, 0.05)';
+      
+      selectedExportType = type;
+    }
+    
+    confirmExport.addEventListener('click', () => {
+      if (!selectedExportType) {
+        alert('Please select an export option');
+        return;
+      }
+      
+      exportModal.style.display = 'none';
+      
+      switch(selectedExportType) {
+        case 'dashboard':
+          exportDashboardSummary();
+          break;
+        case 'user':
+          exportUserDetails();
+          break;
+        case 'current':
+          exportCurrentView();
+          break;
+      }
+    });
+    
+    // Export functions
+    function exportDashboardSummary() {
+      // Create CSV content
+      const csvContent = [
+        ['Report Type', 'Dashboard Summary'],
+        ['Generated At', new Date().toLocaleString()],
+        [],
+        ['Statistic', 'Value'],
+        ['Total Users', <%= totalUsers %>],
+        ['Total Resumes', <%= totalResumes %>],
+        ['Total Job Posts', <%= totalJobs %>],
+        ['Total Questions', <%= totalQuestions %>]
+      ];
+      
+      // Convert to CSV string
+      const csv = Papa.unparse(csvContent);
+      
+      // Download CSV
+      downloadCSV(csv, 'dashboard-summary.csv');
+    }
+    
+    function exportUserDetails() {
+      // This would require server-side implementation
+      window.location.href = '/admin/export-users';
+    }
+    
+    function exportCurrentView() {
+      // Create data array
+      const data = [
+        ['Email', 'Created At', 'Resumes', 'Job Posts', 'Questions']
+      ];
+      
+      // Add each user's data
+      <% users.forEach(user => { %>
+        data.push([
+          '<%= user.email %>',
+          '<%= user.createdAt.toDateString() %>',
+          '<%= user.resumeCount %>',
+          '<%= user.jobCount %>',
+          '<%= user.questionCount %>'
+        ]);
+      <% }) %>
+      
+      // Convert to CSV
+      const csv = Papa.unparse(data);
+      
+      // Download CSV
+      downloadCSV(csv, 'user-list-export.csv');
+    }
+    
+    function downloadCSV(csv, filename) {
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    function downloadPDF(data, headers, filename) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.text('Admin Report', 14, 15);
+      doc.autoTable({
+        head: [headers],
+        body: data,
+        startY: 20,
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [67, 97, 238] }
+      });
+      
+      doc.save(filename);
+    }
+    
+    // User management functions
+    function confirmDelete(userId) {
+      if (confirm("Are you sure you want to delete this user?")) {
+        window.location.href = `/admin/delete-user/${userId}`;
+      }
+    }
+
+    function toggleDeleteButton() {
+      const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+      const deleteBtn = document.getElementById('deleteSelectedBtn');
+      deleteBtn.style.display = checkboxes.length > 0 ? 'inline-block' : 'none';
+    }
+
+    function selectAllToggle(source) {
+      const checkboxes = document.querySelectorAll('.user-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = source.checked;
+      });
+      toggleDeleteButton();
+    }
+
+    function deleteSelectedUsers() {
+      const selectedIds = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+      if (selectedIds.length === 0) return;
+      if (confirm(`Are you sure you want to delete ${selectedIds.length} user(s)?`)) {
+        window.location.href = `/admin/delete-users?ids=${selectedIds.join(',')}`;
+      }
+    }
+  </script>
+</body>
+</html>
