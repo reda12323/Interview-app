@@ -1,0 +1,135 @@
+/* Container */
+.interview-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', system-ui;
+  text-align: center;
+  overflow-x: hidden; /* ✅ Prevent horizontal scroll */
+}
+
+/* Question input section */
+.question-input-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.question-input-section textarea {
+  width: 100%;
+  max-width: 700px; /* ✅ Limit width on large screens */
+  height: 100px;
+  padding: 1rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+
+.question-input-section button {
+  padding: 0.8rem 2rem;
+  background: #4A90E2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.answer-box {
+  margin-top: 2rem;
+  background: #e7f4e4;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border-left: 4px solid #4caf50;
+}
+
+/* Carousel section */
+.examples-section {
+  margin-top: 3rem;
+}
+
+.carousel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 260px;
+  overflow: hidden;
+}
+
+/* Card styles */
+.card {
+  position: absolute;
+  width: 280px;
+  padding: 1rem;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+  opacity: 0;
+  z-index: 1;
+}
+
+.card.center {
+  transform: translateX(0) scale(1.1) rotateY(0);
+  opacity: 1;
+  z-index: 3;
+}
+
+.card.left {
+  transform: translateX(-300px) scale(0.9) rotateY(25deg);
+  opacity: 0.7;
+  z-index: 2;
+}
+
+.card.right {
+  transform: translateX(300px) scale(0.9) rotateY(-25deg);
+  opacity: 0.7;
+  z-index: 2;
+}
+
+.card.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5);
+}
+
+/* ✅ Responsive fix: hide all but center card */
+@media (max-width: 768px) {
+  .carousel {
+    height: auto;
+  }
+
+  .card {
+    position: static;
+    transform: none !important;
+    opacity: 0 !important;
+    display: none;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .card.center {
+    display: block;
+    opacity: 1 !important;
+    z-index: 1;
+  }
+}
+
+/* Spinner styles */
+button svg {
+  vertical-align: middle;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,145 @@
+/* Container & Layout */
+.resume-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.resume-title {
+  font-size: 2.75rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.resume-subtitle {
+  color: #6b7280;
+  max-width: 800px;
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+/* Card */
+.resume-card {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  width: 100%;
+  max-width: 750px;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+/* Hide native file input */
+.file-input {
+  display: none;
+}
+
+/* Custom file upload button */
+.custom-file-upload {
+  display: inline-block;
+  width: 100%;
+  padding: 16px;
+  border: 2px dashed #6b7280;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-file-upload:hover {
+  background-color: #f3f4f6;
+  border-color: #4b5563;
+  color: #4b5563;
+}
+
+.custom-file-upload:focus {
+  outline: 3px solid #4b5563;
+  outline-offset: 2px;
+}
+
+/* Button Row */
+.button-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Buttons */
+.btn-primary {
+  padding: 14px 24px;
+  font-size: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  background-color: #6b7280;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #4b5563;
+  transform: scale(1.02);
+}
+
+.btn-primary:disabled {
+  background-color: #a1a1aa;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .resume-card {
+    padding: 24px;
+  }
+
+  .resume-title {
+    font-size: 2rem;
+  }
+
+  .resume-subtitle {
+    font-size: 1rem;
+  }
+
+  .button-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+}
